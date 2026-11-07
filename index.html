@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#171126">
+<title>Cheese Catcher — Squeekchain Arcade</title>
+<style>
+:root{--bg:#171126;--panel:#241a38;--panel2:#302347;--cream:#fff2d4;--muted:#b9a9ce;--yellow:#ffd34e;--pink:#ff7b9c;--green:#8ef0a5;--line:#4a3864}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#45305e 0,#211832 42%,#120d1c 100%);color:var(--cream);font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;display:flex;justify-content:center;padding:18px;touch-action:pan-y}
+button{font:inherit;cursor:pointer;border:0}
+.app{width:min(100%,760px);margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.04em;font-size:clamp(18px,4vw,25px)}
+.logo{width:42px;height:42px;border-radius:13px;background:var(--yellow);display:grid;place-items:center;font-size:25px;box-shadow:0 4px 0 #b77b25}
+.live{font-size:11px;color:var(--green);border:1px solid #426b56;border-radius:99px;padding:7px 10px;background:#1b3029;white-space:nowrap}
+.live.offline{color:#e8bd8b;border-color:#72563b;background:#30251d}
+.card{background:linear-gradient(160deg,#2c2140,#21182f);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 16px 45px #09061166}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
+.stat{background:#17112699;border:1px solid #403052;border-radius:14px;padding:10px 7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.stat strong{font-size:clamp(17px,4vw,24px);font-variant-numeric:tabular-nums}
+#score{color:var(--yellow)}#lives{color:var(--pink)}#time{color:var(--green)}
+.arena{position:relative;overflow:hidden;height:min(58vh,430px);min-height:310px;border-radius:17px;border:2px solid #604779;background:linear-gradient(#211936 0%,#34234b 68%,#5b3c4f 68%,#76513f 100%);touch-action:none}
+.stars{position:absolute;inset:0;opacity:.6;background-image:radial-gradient(#fff 1px,transparent 1.5px),radial-gradient(#d9c5ff 1px,transparent 1.5px);background-size:57px 53px,83px 71px;background-position:5px 7px,28px 19px}
+.moon{position:absolute;right:9%;top:9%;width:43px;height:43px;border-radius:50%;background:#ffe6a3;box-shadow:0 0 28px #ffe6a366}
+.ground{position:absolute;bottom:0;left:0;right:0;height:31%;background:repeating-linear-gradient(90deg,#694735 0 22px,#76513d 22px 44px);border-top:5px solid #9b704d}
+.hamster{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:76px;height:67px;display:grid;place-items:center;font-size:58px;filter:drop-shadow(0 5px 0 #2a1725);z-index:4;transition:left .06s linear;user-select:none}
+.hamster:after{content:"";position:absolute;bottom:-3px;width:60px;height:9px;border-radius:50%;background:#170e1d88;z-index:-1}
+.fall{position:absolute;top:-45px;z-index:3;font-size:32px;filter:drop-shadow(0 3px 2px #140d1c88);user-select:none;pointer-events:none}
+.overlay{position:absolute;inset:0;z-index:8;background:#171126d9;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
+.overlaybox{max-width:360px}
+.overlay h1{font-size:clamp(28px,7vw,43px);margin:0 0 8px;color:var(--yellow);line-height:1.05}
+.overlay p{color:#e0d4ed;line-height:1.5;margin:8px 0 18px}
+.primary{background:var(--yellow);color:#35213a;font-weight:900;padding:13px 23px;border-radius:13px;box-shadow:0 4px 0 #b77b25;min-width:160px}
+.primary:active{transform:translateY(3px);box-shadow:0 1px 0 #b77b25}
+.hidden{display:none!important}
+.controls{display:flex;justify-content:center;gap:14px;margin-top:13px}
+.pad{width:76px;height:54px;border-radius:15px;background:#3a2b50;color:var(--cream);border:1px solid #624d79;font-size:24px;box-shadow:0 4px 0 #171126;touch-action:none}
+.pad:active{background:#5b4277;transform:translateY(2px);box-shadow:0 2px 0 #171126}
+.hint{text-align:center;color:var(--muted);font-size:12px;margin:10px 0 0}
+.chain{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:13px;padding:11px 13px;background:#17112688;border:1px solid #403052;border-radius:13px;font-size:12px;color:var(--muted)}
+.chain strong{color:var(--green);font-variant-numeric:tabular-nums}
+.footer{text-align:center;color:#88799e;font-size:11px;margin:14px 0 4px}
+@media(max-width:430px){body{padding:11px}.card{padding:11px;border-radius:18px}.stats{gap:6px}.stat{padding:8px 3px}.arena{min-height:300px;height:53vh}.chain{font-size:11px}.hamster{font-size:53px;width:68px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="top">
+    <div class="brand"><div class="logo">🧀</div><span>CHEESE CATCHER</span></div>
+    <div id="liveBadge" class="live offline">● CHECKING SQUEEKCHAIN</div>
+  </header>
+  <section class="card">
+    <div class="stats">
+      <div class="stat"><small>Score</small><strong id="score">0</strong></div>
+      <div class="stat"><small>Best</small><strong id="best">0</strong></div>
+      <div class="stat"><small>Lives</small><strong id="lives">❤️❤️❤️</strong></div>
+      <div class="stat"><small>Time</small><strong id="time">45</strong></div>
+    </div>
+    <div class="arena" id="arena">
+      <div class="stars"></div><div class="moon"></div><div class="ground"></div>
+      <div id="hamster" class="hamster">🐹</div>
+      <div id="overlay" class="overlay">
+        <div class="overlaybox">
+          <h1>Catch the cheese!</h1>
+          <p>Help your hamster collect falling cheese. Grab the golden cheese for bonus points and dodge the bombs. You have 45 seconds and 3 lives.</p>
+          <button id="startBtn" class="primary">START GAME</button>
+          <p style="font-size:11px;margin-top:14px">Move with ← → or A / D. On mobile, use the buttons below.</p>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="pad" id="leftBtn" aria-label="Move left">◀</button>
+      <button class="pad" id="rightBtn" aria-label="Move right">▶</button>
+    </div>
+    <p class="hint">Collect 🧀 +10 · Golden cheese 🌟 +50 · Bomb 💣 costs one life</p>
+    <div class="chain"><span>🐾 SQUEEKCHAIN WHEEL</span><span id="wheelData"><strong>Connecting…</strong></span></div>
+  </section>
+  <div class="footer">An original mini-game for the Squeekchain community · No wallet connection required</div>
+</main>
+<script>
+(() => {
+ const $=id=>document.getElementById(id), arena=$('arena'), hamster=$('hamster'), overlay=$('overlay');
+ let x=50, score=0, lives=3, time=45, running=false, items=[], last=0, spawn=0, raf=0, timer=null, speed=1;
+ let best=Number(localStorage.getItem('cheeseCatcherBest')||0), wheelBoost=0, wheelRpm=0;
+ $('best').textContent=best;
+ function setHamster(){hamster.style.left=x+'%'}
+ function update(){ $('score').textContent=score; $('lives').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives); $('time').textContent=time; }
+ function move(dir){if(!running)return;x=Math.max(7,Math.min(93,x+dir*5));setHamster()}
+ function clearItems(){items.forEach(i=>i.el.remove());items=[]}
+ function spawnItem(){
+   const roll=Math.random(), goldChance=.10+wheelBoost, type=roll<.12?'bomb':roll<.12+goldChance?'gold':'cheese';
+   const el=document.createElement('div');el.className='fall';el.textContent=type==='bomb'?'💣':type==='gold'?'🌟':'🧀';
+   const left=7+Math.random()*86;el.style.left=left+'%';arena.appendChild(el);
+   items.push({el,type,x:left,y:-42,vy:(2.0+Math.random()*1.15)*speed});
+ }
+ function finish(){
+   running=false;cancelAnimationFrame(raf);clearInterval(timer);clearItems();
+   if(score>best){best=score;localStorage.setItem('cheeseCatcherBest',best);$('best').textContent=best}
+   overlay.classList.remove('hidden');
+   overlay.innerHTML=`<div class="overlaybox"><h1>${lives===0?'Ouch!':'Time up!'}</h1><p>You collected <b style="color:#ffd34e">${score}</b> points.<br>${score>=best?'New personal best!':'Your best score is '+best+'.'}<br><br>${score>=250?'Cheese champion. Squeek would be proud!':'Give it another run and beat your score.'}</p><button id="againBtn" class="primary">PLAY AGAIN</button></div>`;
+   $('againBtn').addEventListener('click',start);
+ }
+ function frame(ts){
+   if(!running)return;
+   const dt=Math.min(32,ts-last||16);last=ts;spawn+=dt;
+   if(spawn>Math.max(330,850-score*1.2)){spawn=0;spawnItem()}
+   const ar=arena.getBoundingClientRect(), hr=hamster.getBoundingClientRect();
+   items=items.filter(item=>{
+     item.y+=item.vy*(dt/16);item.el.style.top=item.y+'px';
+     const ir=item.el.getBoundingClientRect();
+     const hit=ir.bottom>hr.top+12&&ir.top<hr.bottom&&ir.right>hr.left+8&&ir.left<hr.right-8;
+     if(hit){
+       if(item.type==='bomb'){lives--;update();if(lives<=0){item.el.remove();finish();return false}}
+       else{score+=item.type==='gold'?50:10;update()}
+       item.el.remove();return false;
+     }
+     if(item.y>ar.height+5){item.el.remove();return false}
+     return true;
+   });
+   raf=requestAnimationFrame(frame);
+ }
+ function start(){
+   cancelAnimationFrame(raf);clearInterval(timer);clearItems();
+   score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();
+   overlay.classList.add('hidden');
+   timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);
+   raf=requestAnimationFrame(frame);
+ }
+ $('startBtn').addEventListener('click',start);
+ document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'?-1:1)}});
+ function bindHold(id,dir){
+   const b=$(id);let interval=null;
+   const down=e=>{e.preventDefault();move(dir);if(interval)clearInterval(interval);interval=setInterval(()=>move(dir),90)};
+   const up=()=>{clearInterval(interval);interval=null};
+   b.addEventListener('pointerdown',down);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,up));
+ }
+ bindHold('leftBtn',-1);bindHold('rightBtn',1);
+ async function fetchWheel(){
+   const badge=$('liveBadge'), data=$('wheelData');
+   try{
+     const r=await fetch('https://api.squeekchain.com/v1/status',{cache:'no-store'});
+     if(!r.ok)throw new Error('API unavailable');
+     const j=await r.json(), m=j.measurement;
+     if(!m){throw new Error('No measurement')}
+     const fresh=m.freshness==='online'&&m.provenance==='hardware';
+     wheelRpm=Number(m.rpmMilli||0)/1000;
+     wheelBoost=fresh&&m.coreStatus==='ACTIVE'?Math.min(.12,Math.max(0,wheelRpm/1000*.12)):0;
+     const rpm=wheelRpm.toFixed(1);
+     data.innerHTML=`<strong>${rpm} RPM · ${m.coreStatus||'UNKNOWN'}${wheelBoost>0?' · GOLD +'+Math.round(wheelBoost*100)+'%':''}</strong>`;
+     badge.textContent=fresh?'● LIVE HARDWARE DATA':'● DATA '+String(m.freshness||'UNKNOWN').toUpperCase();
+     badge.classList.toggle('offline',!fresh);
+   }catch(e){
+     data.innerHTML='<strong>Live data unavailable</strong>';
+     badge.textContent='● SQUEEKCHAIN OFFLINE';badge.classList.add('offline');
+   }
+ }
+ fetchWheel();setInterval(fetchWheel,15000);
+})();
+</script>
+</body>
+</html>
