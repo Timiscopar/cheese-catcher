@@ -18,21 +18,21 @@ button{font:inherit;cursor:pointer}.shell{width:min(100%,900px);margin:auto}.mas
 .hamster{position:absolute;z-index:4;bottom:23px;left:50%;transform:translateX(-50%);font-size:60px;line-height:1;filter:drop-shadow(0 5px 0 #261323);transition:left .055s linear;user-select:none}.hamster:after{content:"";position:absolute;z-index:-1;bottom:-5px;left:5px;width:55px;height:9px;border-radius:50%;background:#160d1c99}.fall{position:absolute;z-index:3;top:-45px;font-size:31px;filter:drop-shadow(0 3px 2px #100a18);pointer-events:none}
 .overlay{position:absolute;z-index:8;inset:0;display:grid;place-items:center;text-align:center;padding:20px;background:#100d20d9;backdrop-filter:blur(5px)}.overlay.hidden{display:none}.dialog{max-width:370px}.mascot{font-size:50px;filter:drop-shadow(0 5px 0 #362047)}.dialog h2{font-size:clamp(29px,7vw,43px);color:var(--gold);margin:5px 0 9px;line-height:1.05;text-shadow:0 3px #8d542c}.dialog p{color:#d3c8e3;font-size:13px;line-height:1.55;margin:0 0 17px}.cta{border:0;border-radius:12px;padding:13px 25px;background:linear-gradient(180deg,#ffe58b,#f7b83e);color:#392443;font-weight:1000;letter-spacing:.08em;box-shadow:0 4px 0 #a65f32}.cta:active{transform:translateY(3px);box-shadow:0 1px #a65f32}
 .controls{display:flex;justify-content:center;gap:16px;margin:14px 0 8px}.pad{width:84px;height:53px;border-radius:14px;border:1px solid #675286;background:linear-gradient(180deg,#493762,#2d2342);color:#fff;font-size:23px;box-shadow:0 4px #171023;touch-action:none}.pad:active{transform:translateY(3px);box-shadow:0 1px #171023;background:#5c4778}.tip{text-align:center;color:#a99dbc;font-size:11px;margin:8px 0 13px}.tip strong{color:#f1d58a}
-.info{display:grid;grid-template-columns:1fr 1fr;gap:9px}.infobox{border:1px solid #403353;background:#151122;border-radius:13px;padding:11px 13px}.infobox small{display:block;color:#9589a9;font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px}.infobox b{font-size:12px;color:#ded3ef}.infobox p{font-size:10px;color:#a99fba;line-height:1.4;margin:4px 0 0}.foot{text-align:center;color:#756987;font-size:10px;margin-top:17px;letter-spacing:.05em}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:9px}.infobox{border:1px solid #403353;background:#151122;border-radius:13px;padding:11px 13px}.infobox small{display:block;color:#9589a9;font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px}.infobox b{font-size:12px;color:#ded3ef}.infobox p{font-size:10px;color:#a99fba;line-height:1.4;margin:4px 0 0}.walletbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border:1px solid #4a3b6b;border-radius:15px;background:#171226}.walletcopy{min-width:0}.walletcopy b{display:block;font-size:12px}.walletcopy small{display:block;color:#aaa0c1;font-size:10px;margin-top:4px}.wallet-actions{display:flex;align-items:center;gap:8px}.wallet-btn{border:1px solid #8067aa;border-radius:10px;padding:10px 13px;background:#38294f;color:#fff;font-size:11px;font-weight:800}.wallet-address{color:#9df1b3;font-size:10px;overflow-wrap:anywhere}.leaderboard{margin-top:12px;border:1px solid #403353;background:#151122;border-radius:14px;padding:13px}.leaderboard h3{margin:0 0 5px;color:#f8f0dc;font-size:14px}.leaderboard p{margin:0;color:#a99fba;font-size:11px;line-height:1.5}.foot{text-align:center;color:#756987;font-size:10px;margin-top:17px;letter-spacing:.05em}
 @media(max-width:480px){body{padding:13px 10px 24px}.mast{margin-bottom:13px}.mark{width:42px;height:42px}.status{font-size:8px;padding:7px 9px}.gamecard{padding:10px;border-radius:19px}.hud{gap:5px}.metric{padding:8px 2px}.arena{height:52vh;min-height:300px}.hamster{font-size:55px}.info{grid-template-columns:1fr}.intro{margin-bottom:14px}}
 </style>
 </head>
 <body>
 <main class="shell">
 <header class="mast"><div class="identity"><div class="mark">🧀</div><div><div class="wordmark">CHEESE CATCHER</div><div class="submark">SQUEEKCHAIN ARCADE</div></div></div><div class="status">COMMUNITY BUILD · PREVIEW</div></header>
-<section class="intro"><div class="eyebrow">A LITTLE GAME WITH BIG CHEESE ENERGY</div><h1>Catch. Dodge. Repeat.</h1><p>Help your hamster collect the good stuff. Avoid the bombs.</p></section>
+<section class="walletbar" aria-label="Wallet connection"><div class="walletcopy"><b>🏆 Player wallet</b><small id="walletStatus">Connect a wallet to prepare for leaderboard play. You can still play without connecting.</small><small class="wallet-address" id="walletAddress"></small></div><div class="wallet-actions"><button class="wallet-btn" id="connectWalletBtn" type="button">CONNECT WALLET</button></div></section><section class="intro"><div class="eyebrow">A LITTLE GAME WITH BIG CHEESE ENERGY</div><h1>Catch. Dodge. Repeat.</h1><p>Help your hamster collect the good stuff. Avoid the bombs.</p></section>
 <section class="gamecard">
 <div class="hud"><div class="metric"><span>Score</span><b id="score">0</b></div><div class="metric"><span>Personal best</span><b id="best">0</b></div><div class="metric"><span>Lives</span><b id="lives">❤️❤️❤️</b></div><div class="metric"><span>Time</span><b id="time">45</b></div></div>
 <div class="arena" id="arena"><div class="sky"></div><div class="moon"></div><div class="hill one"></div><div class="hill two"></div><div class="floor"></div><div id="hamster" class="hamster">🐹</div><div id="overlay" class="overlay"><div class="dialog"><div class="mascot">🐹</div><h2>Ready, squeeker?</h2><p>Catch cheese for points, grab golden cheese for a big bonus, and dodge bombs. You have 45 seconds and 3 lives.</p><button class="cta" id="startBtn">START GAME</button><p style="font-size:10px;margin:14px 0 0">Move with ← → or A / D. On mobile, use the buttons below.</p></div></div></div>
 <div class="controls"><button class="pad" id="leftBtn" aria-label="Move left">◀</button><button class="pad" id="rightBtn" aria-label="Move right">▶</button></div>
 <p class="tip">🧀 <strong>+10</strong> regular · 🌟 <strong>+50</strong> golden · 💣 costs one life</p>
 <div class="info"><div class="infobox"><small>How to play</small><b>Catch the cheese. Stay alive.</b><p>The game speeds up as the clock runs down. Beat your personal best.</p></div><div class="infobox"><small>Squeekchain connection</small><b id="chainState">Integration in development</b><p>Live hamster data and on-chain features will be added after API and contract verification.</p></div></div>
-</section><footer class="foot">AN INDEPENDENT COMMUNITY GAME · BUILT FOR SQUEEKCHAIN</footer>
+</section><section class="leaderboard" aria-live="polite"><h3>🏆 Global leaderboard</h3><p id="leaderboardStatus">Leaderboard is being built. Wallet connection is the first step; scores are not submitted or ranked yet.</p></section><footer class="foot">AN INDEPENDENT COMMUNITY GAME · BUILT FOR SQUEEKCHAIN</footer>
 </main>
 <script>
 (()=>{const $=id=>document.getElementById(id),arena=$('arena'),hamster=$('hamster'),overlay=$('overlay');let x=50,score=0,lives=3,time=45,running=false,items=[],last=0,spawn=0,raf=0,timer=null,speed=1;let best=Number(localStorage.getItem('cheeseCatcherBest')||0);$('best').textContent=best;
@@ -42,6 +42,56 @@ function spawnItem(){const n=Math.random(),type=n<.12?'bomb':n<.22?'gold':'chees
 function finish(){running=false;cancelAnimationFrame(raf);clearInterval(timer);clearItems();if(score>best){best=score;localStorage.setItem('cheeseCatcherBest',best);$('best').textContent=best}overlay.classList.remove('hidden');overlay.innerHTML='<div class="dialog"><div class="mascot">🐹</div><h2>'+(lives===0?'Ouch!':'Time up!')+'</h2><p>You collected <strong style="color:#ffd45a">'+score+'</strong> points.<br>'+(score===best?'New personal best!':'Personal best: '+best+'.')+'<br><br>'+(score>=250?'Cheese champion. Squeek would be proud!':'Run it back and beat your score.')+'</p><button class="cta" id="againBtn">PLAY AGAIN</button></div>';$('againBtn').addEventListener('click',start)}
 function frame(ts){if(!running)return;const dt=Math.min(32,ts-last||16);last=ts;spawn+=dt;if(spawn>Math.max(330,850-score*1.2)){spawn=0;spawnItem()}const ar=arena.getBoundingClientRect(),hr=hamster.getBoundingClientRect();items=items.filter(it=>{it.y+=it.vy*dt/16;it.el.style.top=it.y+'px';const ir=it.el.getBoundingClientRect(),hit=ir.bottom>hr.top+12&&ir.top<hr.bottom&&ir.right>hr.left+8&&ir.left<hr.right-8;if(hit){if(it.type==='bomb'){lives--;update();if(lives<=0){it.el.remove();finish();return false}}else{score+=it.type==='gold'?50:10;update()}it.el.remove();return false}if(it.y>ar.height+5){it.el.remove();return false}return true});raf=requestAnimationFrame(frame)}
 function start(){cancelAnimationFrame(raf);clearInterval(timer);clearItems();score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();overlay.classList.add('hidden');timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);raf=requestAnimationFrame(frame)}
+
+const walletBtn=$('connectWalletBtn'),walletStatus=$('walletStatus'),walletAddress=$('walletAddress');
+const SEPOLIA_CHAIN_ID='0xaa36a7';
+let connectedAddress='';
+function shortAddress(a){return a.slice(0,6)+'...'+a.slice(-4)}
+function showWallet(address){
+  connectedAddress=address||'';
+  walletAddress.textContent=address?shortAddress(address):'';
+  walletBtn.textContent=address?'WALLET CONNECTED':'CONNECT WALLET';
+  walletStatus.textContent=address?'Wallet connected on Ethereum Sepolia. You can play without signing a transaction.':'Connect a wallet to prepare for leaderboard play. You can still play without connecting.';
+}
+async function connectWallet(){
+  if(!window.ethereum){
+    walletStatus.textContent='No browser wallet detected. Open this game in MetaMask or another wallet browser.';
+    return;
+  }
+  walletBtn.disabled=true;
+  walletBtn.textContent='CONNECTING...';
+  try{
+    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+    if(!accounts||!accounts.length)throw new Error('No wallet account was returned.');
+    let chainId=await window.ethereum.request({method:'eth_chainId'});
+    if(chainId.toLowerCase()!==SEPOLIA_CHAIN_ID){
+      try{
+        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:SEPOLIA_CHAIN_ID}]});
+      }catch(switchError){
+        if(switchError.code===4902){
+          await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:SEPOLIA_CHAIN_ID,chainName:'Sepolia',nativeCurrency:{name:'Sepolia Ether',symbol:'ETH',decimals:18},rpcUrls:['https://ethereum-sepolia-rpc.publicnode.com'],blockExplorerUrls:['https://sepolia.etherscan.io']}]});
+        }else throw switchError;
+      }
+      chainId=await window.ethereum.request({method:'eth_chainId'});
+    }
+    if(chainId.toLowerCase()!==SEPOLIA_CHAIN_ID)throw new Error('Please switch your wallet to Ethereum Sepolia.');
+    showWallet(accounts[0]);
+  }catch(error){
+    walletStatus.textContent=error&&error.code===4001?'Wallet connection was cancelled.':(error.message||'Could not connect wallet.');
+    walletBtn.textContent='CONNECT WALLET';
+  }finally{walletBtn.disabled=false}
+}
+walletBtn.addEventListener('click',connectWallet);
+if(window.ethereum){
+  window.ethereum.on('accountsChanged',accounts=>showWallet(accounts&&accounts.length?accounts[0]:''));
+  window.ethereum.on('chainChanged',chainId=>{
+    if(chainId.toLowerCase()!==SEPOLIA_CHAIN_ID){
+      showWallet('');
+      walletStatus.textContent='Switch to Ethereum Sepolia to use the leaderboard features.';
+    }
+  });
+}
+
 $('startBtn').addEventListener('click',start);document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'?-1:1)}});
 function bindHold(id,dir){const b=$(id);let interval=null;const down=e=>{e.preventDefault();move(dir);if(interval)clearInterval(interval);interval=setInterval(()=>move(dir),90)},up=()=>{clearInterval(interval);interval=null};b.addEventListener('pointerdown',down);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,up))}bindHold('leftBtn',-1);bindHold('rightBtn',1);
 })();
