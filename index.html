@@ -1,164 +1,48 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#171126">
-<title>Cheese Catcher — Squeekchain Arcade</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#100d20">
+<meta name="description" content="Cheese Catcher is a hamster-powered arcade game built for the Squeekchain community.">
+<title>Cheese Catcher | Squeekchain Arcade</title>
 <style>
-:root{--bg:#171126;--panel:#241a38;--panel2:#302347;--cream:#fff2d4;--muted:#b9a9ce;--yellow:#ffd34e;--pink:#ff7b9c;--green:#8ef0a5;--line:#4a3864}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#45305e 0,#211832 42%,#120d1c 100%);color:var(--cream);font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;display:flex;justify-content:center;padding:18px;touch-action:pan-y}
-button{font:inherit;cursor:pointer;border:0}
-.app{width:min(100%,760px);margin:auto}
-.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.04em;font-size:clamp(18px,4vw,25px)}
-.logo{width:42px;height:42px;border-radius:13px;background:var(--yellow);display:grid;place-items:center;font-size:25px;box-shadow:0 4px 0 #b77b25}
-.live{font-size:11px;color:var(--green);border:1px solid #426b56;border-radius:99px;padding:7px 10px;background:#1b3029;white-space:nowrap}
-.live.offline{color:#e8bd8b;border-color:#72563b;background:#30251d}
-.card{background:linear-gradient(160deg,#2c2140,#21182f);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:0 16px 45px #09061166}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
-.stat{background:#17112699;border:1px solid #403052;border-radius:14px;padding:10px 7px;text-align:center}
-.stat small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
-.stat strong{font-size:clamp(17px,4vw,24px);font-variant-numeric:tabular-nums}
-#score{color:var(--yellow)}#lives{color:var(--pink)}#time{color:var(--green)}
-.arena{position:relative;overflow:hidden;height:min(58vh,430px);min-height:310px;border-radius:17px;border:2px solid #604779;background:linear-gradient(#211936 0%,#34234b 68%,#5b3c4f 68%,#76513f 100%);touch-action:none}
-.stars{position:absolute;inset:0;opacity:.6;background-image:radial-gradient(#fff 1px,transparent 1.5px),radial-gradient(#d9c5ff 1px,transparent 1.5px);background-size:57px 53px,83px 71px;background-position:5px 7px,28px 19px}
-.moon{position:absolute;right:9%;top:9%;width:43px;height:43px;border-radius:50%;background:#ffe6a3;box-shadow:0 0 28px #ffe6a366}
-.ground{position:absolute;bottom:0;left:0;right:0;height:31%;background:repeating-linear-gradient(90deg,#694735 0 22px,#76513d 22px 44px);border-top:5px solid #9b704d}
-.hamster{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:76px;height:67px;display:grid;place-items:center;font-size:58px;filter:drop-shadow(0 5px 0 #2a1725);z-index:4;transition:left .06s linear;user-select:none}
-.hamster:after{content:"";position:absolute;bottom:-3px;width:60px;height:9px;border-radius:50%;background:#170e1d88;z-index:-1}
-.fall{position:absolute;top:-45px;z-index:3;font-size:32px;filter:drop-shadow(0 3px 2px #140d1c88);user-select:none;pointer-events:none}
-.overlay{position:absolute;inset:0;z-index:8;background:#171126d9;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
-.overlaybox{max-width:360px}
-.overlay h1{font-size:clamp(28px,7vw,43px);margin:0 0 8px;color:var(--yellow);line-height:1.05}
-.overlay p{color:#e0d4ed;line-height:1.5;margin:8px 0 18px}
-.primary{background:var(--yellow);color:#35213a;font-weight:900;padding:13px 23px;border-radius:13px;box-shadow:0 4px 0 #b77b25;min-width:160px}
-.primary:active{transform:translateY(3px);box-shadow:0 1px 0 #b77b25}
-.hidden{display:none!important}
-.controls{display:flex;justify-content:center;gap:14px;margin-top:13px}
-.pad{width:76px;height:54px;border-radius:15px;background:#3a2b50;color:var(--cream);border:1px solid #624d79;font-size:24px;box-shadow:0 4px 0 #171126;touch-action:none}
-.pad:active{background:#5b4277;transform:translateY(2px);box-shadow:0 2px 0 #171126}
-.hint{text-align:center;color:var(--muted);font-size:12px;margin:10px 0 0}
-.chain{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:13px;padding:11px 13px;background:#17112688;border:1px solid #403052;border-radius:13px;font-size:12px;color:var(--muted)}
-.chain strong{color:var(--green);font-variant-numeric:tabular-nums}
-.footer{text-align:center;color:#88799e;font-size:11px;margin:14px 0 4px}
-@media(max-width:430px){body{padding:11px}.card{padding:11px;border-radius:18px}.stats{gap:6px}.stat{padding:8px 3px}.arena{min-height:300px;height:53vh}.chain{font-size:11px}.hamster{font-size:53px;width:68px}}
+:root{color-scheme:dark;--ink:#f8f0dc;--muted:#aaa0c1;--gold:#ffd45a;--violet:#a98bff;--pink:#ff83aa;--panel:#211a37;--line:#4a3b6b}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -15%,#46336d 0,#1c1630 48%,#0d0a17 100%);color:var(--ink);font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;padding:20px 14px 30px}
+button{font:inherit;cursor:pointer}.shell{width:min(100%,900px);margin:auto}.mast{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 18px}.identity{display:flex;align-items:center;gap:12px}.mark{width:48px;height:48px;display:grid;place-items:center;border:2px solid #ffdf83;border-radius:14px;background:linear-gradient(145deg,#ffe58b,#f5a93f);box-shadow:0 4px 0 #9b5a31;font-size:29px}.wordmark{font-weight:1000;letter-spacing:.09em;font-size:clamp(17px,4vw,25px)}.submark{font-size:10px;letter-spacing:.2em;color:#c8b9e8;margin-top:3px}.status{border:1px solid #655286;background:#211a37;border-radius:999px;padding:8px 12px;color:#d6c7f5;font-size:10px;letter-spacing:.12em;white-space:nowrap}.status:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#eabf5e;margin-right:7px}
+.intro{text-align:center;margin:8px 0 18px}.eyebrow{color:var(--gold);font-size:10px;font-weight:900;letter-spacing:.25em}.intro h1{font-size:clamp(29px,7vw,54px);line-height:1;margin:9px 0 8px;text-shadow:0 4px 0 #53396f,0 0 24px #a98bff44}.intro p{margin:0;color:#c3b9d5;font-size:13px}
+.gamecard{border:1px solid #554474;border-radius:25px;padding:15px;background:linear-gradient(145deg,#2b2245,#171226);box-shadow:0 22px 70px #05030c99,inset 0 1px #ffffff12}
+.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}.metric{background:#110e1f;border:1px solid #3e3158;border-radius:14px;text-align:center;padding:9px 5px}.metric span{display:block;color:#9f92b8;font-size:9px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px}.metric b{font-size:clamp(18px,4vw,25px);font-variant-numeric:tabular-nums}.metric:first-child b{color:var(--gold)}#lives{color:var(--pink)}#time{color:#9df1b3}
+.arena{height:min(57vh,470px);min-height:320px;position:relative;overflow:hidden;border:2px solid #705a94;border-radius:18px;background:linear-gradient(180deg,#17132b 0%,#30244a 67%,#4d3451 68%,#76503e 100%);touch-action:none;isolation:isolate}
+.sky{position:absolute;inset:0;background-image:radial-gradient(#fff 1px,transparent 1.5px),radial-gradient(#c8b6ff 1px,transparent 1.5px);background-size:59px 57px,91px 83px;background-position:12px 9px,41px 27px;opacity:.65}.moon{position:absolute;right:9%;top:10%;width:46px;height:46px;border-radius:50%;background:#ffe5a4;box-shadow:0 0 32px #ffe5a477}.hill{position:absolute;bottom:29%;width:70%;height:75px;border-radius:50% 50% 0 0;background:#382c51}.hill.one{left:-20%;}.hill.two{right:-22%;height:105px;background:#44304e}.floor{position:absolute;bottom:0;height:31%;width:100%;border-top:6px solid #a87854;background:repeating-linear-gradient(90deg,#694733 0 23px,#79533c 23px 46px);box-shadow:inset 0 8px #4b302e}
+.hamster{position:absolute;z-index:4;bottom:23px;left:50%;transform:translateX(-50%);font-size:60px;line-height:1;filter:drop-shadow(0 5px 0 #261323);transition:left .055s linear;user-select:none}.hamster:after{content:"";position:absolute;z-index:-1;bottom:-5px;left:5px;width:55px;height:9px;border-radius:50%;background:#160d1c99}.fall{position:absolute;z-index:3;top:-45px;font-size:31px;filter:drop-shadow(0 3px 2px #100a18);pointer-events:none}
+.overlay{position:absolute;z-index:8;inset:0;display:grid;place-items:center;text-align:center;padding:20px;background:#100d20d9;backdrop-filter:blur(5px)}.overlay.hidden{display:none}.dialog{max-width:370px}.mascot{font-size:50px;filter:drop-shadow(0 5px 0 #362047)}.dialog h2{font-size:clamp(29px,7vw,43px);color:var(--gold);margin:5px 0 9px;line-height:1.05;text-shadow:0 3px #8d542c}.dialog p{color:#d3c8e3;font-size:13px;line-height:1.55;margin:0 0 17px}.cta{border:0;border-radius:12px;padding:13px 25px;background:linear-gradient(180deg,#ffe58b,#f7b83e);color:#392443;font-weight:1000;letter-spacing:.08em;box-shadow:0 4px 0 #a65f32}.cta:active{transform:translateY(3px);box-shadow:0 1px #a65f32}
+.controls{display:flex;justify-content:center;gap:16px;margin:14px 0 8px}.pad{width:84px;height:53px;border-radius:14px;border:1px solid #675286;background:linear-gradient(180deg,#493762,#2d2342);color:#fff;font-size:23px;box-shadow:0 4px #171023;touch-action:none}.pad:active{transform:translateY(3px);box-shadow:0 1px #171023;background:#5c4778}.tip{text-align:center;color:#a99dbc;font-size:11px;margin:8px 0 13px}.tip strong{color:#f1d58a}
+.info{display:grid;grid-template-columns:1fr 1fr;gap:9px}.infobox{border:1px solid #403353;background:#151122;border-radius:13px;padding:11px 13px}.infobox small{display:block;color:#9589a9;font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:5px}.infobox b{font-size:12px;color:#ded3ef}.infobox p{font-size:10px;color:#a99fba;line-height:1.4;margin:4px 0 0}.foot{text-align:center;color:#756987;font-size:10px;margin-top:17px;letter-spacing:.05em}
+@media(max-width:480px){body{padding:13px 10px 24px}.mast{margin-bottom:13px}.mark{width:42px;height:42px}.status{font-size:8px;padding:7px 9px}.gamecard{padding:10px;border-radius:19px}.hud{gap:5px}.metric{padding:8px 2px}.arena{height:52vh;min-height:300px}.hamster{font-size:55px}.info{grid-template-columns:1fr}.intro{margin-bottom:14px}}
 </style>
 </head>
 <body>
-<main class="app">
-  <header class="top">
-    <div class="brand"><div class="logo">🧀</div><span>CHEESE CATCHER</span></div>
-    <div id="liveBadge" class="live offline">● CHECKING SQUEEKCHAIN</div>
-  </header>
-  <section class="card">
-    <div class="stats">
-      <div class="stat"><small>Score</small><strong id="score">0</strong></div>
-      <div class="stat"><small>Best</small><strong id="best">0</strong></div>
-      <div class="stat"><small>Lives</small><strong id="lives">❤️❤️❤️</strong></div>
-      <div class="stat"><small>Time</small><strong id="time">45</strong></div>
-    </div>
-    <div class="arena" id="arena">
-      <div class="stars"></div><div class="moon"></div><div class="ground"></div>
-      <div id="hamster" class="hamster">🐹</div>
-      <div id="overlay" class="overlay">
-        <div class="overlaybox">
-          <h1>Catch the cheese!</h1>
-          <p>Help your hamster collect falling cheese. Grab the golden cheese for bonus points and dodge the bombs. You have 45 seconds and 3 lives.</p>
-          <button id="startBtn" class="primary">START GAME</button>
-          <p style="font-size:11px;margin-top:14px">Move with ← → or A / D. On mobile, use the buttons below.</p>
-        </div>
-      </div>
-    </div>
-    <div class="controls">
-      <button class="pad" id="leftBtn" aria-label="Move left">◀</button>
-      <button class="pad" id="rightBtn" aria-label="Move right">▶</button>
-    </div>
-    <p class="hint">Collect 🧀 +10 · Golden cheese 🌟 +50 · Bomb 💣 costs one life</p>
-    <div class="chain"><span>🐾 SQUEEKCHAIN WHEEL</span><span id="wheelData"><strong>Connecting…</strong></span></div>
-  </section>
-  <div class="footer">An original mini-game for the Squeekchain community · No wallet connection required</div>
+<main class="shell">
+<header class="mast"><div class="identity"><div class="mark">🧀</div><div><div class="wordmark">CHEESE CATCHER</div><div class="submark">SQUEEKCHAIN ARCADE</div></div></div><div class="status">COMMUNITY BUILD · PREVIEW</div></header>
+<section class="intro"><div class="eyebrow">A LITTLE GAME WITH BIG CHEESE ENERGY</div><h1>Catch. Dodge. Repeat.</h1><p>Help your hamster collect the good stuff. Avoid the bombs.</p></section>
+<section class="gamecard">
+<div class="hud"><div class="metric"><span>Score</span><b id="score">0</b></div><div class="metric"><span>Personal best</span><b id="best">0</b></div><div class="metric"><span>Lives</span><b id="lives">❤️❤️❤️</b></div><div class="metric"><span>Time</span><b id="time">45</b></div></div>
+<div class="arena" id="arena"><div class="sky"></div><div class="moon"></div><div class="hill one"></div><div class="hill two"></div><div class="floor"></div><div id="hamster" class="hamster">🐹</div><div id="overlay" class="overlay"><div class="dialog"><div class="mascot">🐹</div><h2>Ready, squeeker?</h2><p>Catch cheese for points, grab golden cheese for a big bonus, and dodge bombs. You have 45 seconds and 3 lives.</p><button class="cta" id="startBtn">START GAME</button><p style="font-size:10px;margin:14px 0 0">Move with ← → or A / D. On mobile, use the buttons below.</p></div></div></div>
+<div class="controls"><button class="pad" id="leftBtn" aria-label="Move left">◀</button><button class="pad" id="rightBtn" aria-label="Move right">▶</button></div>
+<p class="tip">🧀 <strong>+10</strong> regular · 🌟 <strong>+50</strong> golden · 💣 costs one life</p>
+<div class="info"><div class="infobox"><small>How to play</small><b>Catch the cheese. Stay alive.</b><p>The game speeds up as the clock runs down. Beat your personal best.</p></div><div class="infobox"><small>Squeekchain connection</small><b id="chainState">Integration in development</b><p>Live hamster data and on-chain features will be added after API and contract verification.</p></div></div>
+</section><footer class="foot">AN INDEPENDENT COMMUNITY GAME · BUILT FOR SQUEEKCHAIN</footer>
 </main>
 <script>
-(() => {
- const $=id=>document.getElementById(id), arena=$('arena'), hamster=$('hamster'), overlay=$('overlay');
- let x=50, score=0, lives=3, time=45, running=false, items=[], last=0, spawn=0, raf=0, timer=null, speed=1;
- let best=Number(localStorage.getItem('cheeseCatcherBest')||0), wheelBoost=0, wheelRpm=0;
- $('best').textContent=best;
- function setHamster(){hamster.style.left=x+'%'}
- function update(){ $('score').textContent=score; $('lives').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives); $('time').textContent=time; }
- function move(dir){if(!running)return;x=Math.max(7,Math.min(93,x+dir*5));setHamster()}
- function clearItems(){items.forEach(i=>i.el.remove());items=[]}
- function spawnItem(){
-   const roll=Math.random(), goldChance=.10+wheelBoost, type=roll<.12?'bomb':roll<.12+goldChance?'gold':'cheese';
-   const el=document.createElement('div');el.className='fall';el.textContent=type==='bomb'?'💣':type==='gold'?'🌟':'🧀';
-   const left=7+Math.random()*86;el.style.left=left+'%';arena.appendChild(el);
-   items.push({el,type,x:left,y:-42,vy:(2.0+Math.random()*1.15)*speed});
- }
- function finish(){
-   running=false;cancelAnimationFrame(raf);clearInterval(timer);clearItems();
-   if(score>best){best=score;localStorage.setItem('cheeseCatcherBest',best);$('best').textContent=best}
-   overlay.classList.remove('hidden');
-   overlay.innerHTML=`<div class="overlaybox"><h1>${lives===0?'Ouch!':'Time up!'}</h1><p>You collected <b style="color:#ffd34e">${score}</b> points.<br>${score>=best?'New personal best!':'Your best score is '+best+'.'}<br><br>${score>=250?'Cheese champion. Squeek would be proud!':'Give it another run and beat your score.'}</p><button id="againBtn" class="primary">PLAY AGAIN</button></div>`;
-   $('againBtn').addEventListener('click',start);
- }
- function frame(ts){
-   if(!running)return;
-   const dt=Math.min(32,ts-last||16);last=ts;spawn+=dt;
-   if(spawn>Math.max(330,850-score*1.2)){spawn=0;spawnItem()}
-   const ar=arena.getBoundingClientRect(), hr=hamster.getBoundingClientRect();
-   items=items.filter(item=>{
-     item.y+=item.vy*(dt/16);item.el.style.top=item.y+'px';
-     const ir=item.el.getBoundingClientRect();
-     const hit=ir.bottom>hr.top+12&&ir.top<hr.bottom&&ir.right>hr.left+8&&ir.left<hr.right-8;
-     if(hit){
-       if(item.type==='bomb'){lives--;update();if(lives<=0){item.el.remove();finish();return false}}
-       else{score+=item.type==='gold'?50:10;update()}
-       item.el.remove();return false;
-     }
-     if(item.y>ar.height+5){item.el.remove();return false}
-     return true;
-   });
-   raf=requestAnimationFrame(frame);
- }
- function start(){
-   cancelAnimationFrame(raf);clearInterval(timer);clearItems();
-   score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();
-   overlay.classList.add('hidden');
-   timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);
-   raf=requestAnimationFrame(frame);
- }
- $('startBtn').addEventListener('click',start);
- document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'?-1:1)}});
- function bindHold(id,dir){
-   const b=$(id);let interval=null;
-   const down=e=>{e.preventDefault();move(dir);if(interval)clearInterval(interval);interval=setInterval(()=>move(dir),90)};
-   const up=()=>{clearInterval(interval);interval=null};
-   b.addEventListener('pointerdown',down);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,up));
- }
- bindHold('leftBtn',-1);bindHold('rightBtn',1);
- async function fetchWheel(){
-   const badge=$('liveBadge'), data=$('wheelData');
-   try{
-     const r=await fetch('https://api.squeekchain.com/v1/status',{cache:'no-store'});
-     if(!r.ok)throw new Error('API unavailable');
-     const j=await r.json(), m=j.measurement;
-     if(!m){throw new Error('No measurement')}
-     const fresh=m.freshness==='online'&&m.provenance==='hardware';
-     wheelRpm=Number(m.rpmMilli||0)/1000;
-     wheelBoost=fresh&&m.coreStatus==='ACTIVE'?Math.min(.12,Math.max(0,wheelRpm/1000*.12)):0;
-     const rpm=wheelRpm.toFixed(1);
-     data.innerHTML=`<strong>${rpm} RPM · ${m.coreStatus||'UNKNOWN'}${wheelBoost>0?' · GOLD +'+Math.round(wheelBoost*100)+'%':''}</strong>`;
-     badge.textContent=fresh?'● LIVE HARDWARE DATA':'● DATA '+String(m.freshness||'UNKNOWN').toUpperCase();
-     badge.classList.toggle('offline',!fresh);
-   }catch(e){
-     data.innerHTML='<strong>Live data unavailable</strong>';
-     badge.textContent='● SQUEEKCHAIN OFFLINE';badge.classList.add('offline');
-   }
- }
- fetchWheel();setInterval(fetchWheel,15000);
+(()=>{const $=id=>document.getElementById(id),arena=$('arena'),hamster=$('hamster'),overlay=$('overlay');let x=50,score=0,lives=3,time=45,running=false,items=[],last=0,spawn=0,raf=0,timer=null,speed=1;let best=Number(localStorage.getItem('cheeseCatcherBest')||0);$('best').textContent=best;
+function setHamster(){hamster.style.left=x+'%'}function update(){$('score').textContent=score;$('lives').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);$('time').textContent=time}
+function move(d){if(!running)return;x=Math.max(7,Math.min(93,x+d*5));setHamster()}function clearItems(){items.forEach(i=>i.el.remove());items=[]}
+function spawnItem(){const n=Math.random(),type=n<.12?'bomb':n<.22?'gold':'cheese',el=document.createElement('div');el.className='fall';el.textContent=type==='bomb'?'💣':type==='gold'?'🌟':'🧀';const left=7+Math.random()*86;el.style.left=left+'%';arena.appendChild(el);items.push({el,type,x:left,y:-42,vy:(2+Math.random()*1.2)*speed})}
+function finish(){running=false;cancelAnimationFrame(raf);clearInterval(timer);clearItems();if(score>best){best=score;localStorage.setItem('cheeseCatcherBest',best);$('best').textContent=best}overlay.classList.remove('hidden');overlay.innerHTML='<div class="dialog"><div class="mascot">🐹</div><h2>'+(lives===0?'Ouch!':'Time up!')+'</h2><p>You collected <strong style="color:#ffd45a">'+score+'</strong> points.<br>'+(score===best?'New personal best!':'Personal best: '+best+'.')+'<br><br>'+(score>=250?'Cheese champion. Squeek would be proud!':'Run it back and beat your score.')+'</p><button class="cta" id="againBtn">PLAY AGAIN</button></div>';$('againBtn').addEventListener('click',start)}
+function frame(ts){if(!running)return;const dt=Math.min(32,ts-last||16);last=ts;spawn+=dt;if(spawn>Math.max(330,850-score*1.2)){spawn=0;spawnItem()}const ar=arena.getBoundingClientRect(),hr=hamster.getBoundingClientRect();items=items.filter(it=>{it.y+=it.vy*dt/16;it.el.style.top=it.y+'px';const ir=it.el.getBoundingClientRect(),hit=ir.bottom>hr.top+12&&ir.top<hr.bottom&&ir.right>hr.left+8&&ir.left<hr.right-8;if(hit){if(it.type==='bomb'){lives--;update();if(lives<=0){it.el.remove();finish();return false}}else{score+=it.type==='gold'?50:10;update()}it.el.remove();return false}if(it.y>ar.height+5){it.el.remove();return false}return true});raf=requestAnimationFrame(frame)}
+function start(){cancelAnimationFrame(raf);clearInterval(timer);clearItems();score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();overlay.classList.add('hidden');timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);raf=requestAnimationFrame(frame)}
+$('startBtn').addEventListener('click',start);document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'?-1:1)}});
+function bindHold(id,dir){const b=$(id);let interval=null;const down=e=>{e.preventDefault();move(dir);if(interval)clearInterval(interval);interval=setInterval(()=>move(dir),90)},up=()=>{clearInterval(interval);interval=null};b.addEventListener('pointerdown',down);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,up))}bindHold('leftBtn',-1);bindHold('rightBtn',1);
 })();
-</script>
-</body>
-</html>
+</script></body></html>
