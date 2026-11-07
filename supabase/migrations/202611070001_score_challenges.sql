@@ -10,7 +10,8 @@ create table if not exists public.score_challenges (
 
 alter table public.score_challenges enable row level security;
 revoke all on public.score_challenges from anon, authenticated;
-grant all on public.score_challenges to service_role;\ngrant all on public.scores to service_role;
+grant all on public.score_challenges to service_role;
+grant all on public.scores to service_role;
 
 -- Browser clients can read the public leaderboard, but only the Edge Function
 -- (using the server-only service role key) can create score rows.
