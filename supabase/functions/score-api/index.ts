@@ -98,12 +98,15 @@ Deno.serve(async (req) => {
       if (recentError) throw recentError;
       if (recent?.length) return json({ error: "Please wait before submitting another score." }, 429);
 
-      const { error: consumeError } = await db
+      const { data: consumed, error: consumeError } = await db
         .from("score_challenges")
         .update({ consumed_at: new Date().toISOString() })
         .eq("id", nonce)
-        .is("consumed_at", null);
+        .is("consumed_at", null)
+        .select("id")
+        .maybeSingle();
       if (consumeError) throw consumeError;
+      if (!consumed) return json({ error: "This signature request has already been used. Try again." }, 400);
 
       const { error: insertError } = await db.from("scores").insert({
         wallet_address: wallet,
