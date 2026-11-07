@@ -25,7 +25,7 @@ button{font:inherit;cursor:pointer}.shell{width:min(100%,900px);margin:auto}.mas
 <body>
 <main class="shell">
 <header class="mast"><div class="identity"><div class="mark">🧀</div><div><div class="wordmark">CHEESE CATCHER</div><div class="submark">SQUEEKCHAIN ARCADE</div></div></div><div class="status">COMMUNITY BUILD · PREVIEW</div></header>
-<section class="walletbar" aria-label="Wallet connection"><div class="walletcopy"><b>🏆 Player wallet</b><small id="walletStatus">Connect a wallet to prepare for leaderboard play. You can still play without connecting.</small><small class="wallet-address" id="walletAddress"></small></div><div class="wallet-actions"><button class="wallet-btn" id="connectWalletBtn" type="button">CONNECT WALLET</button></div></section><section class="intro"><div class="eyebrow">A LITTLE GAME WITH BIG CHEESE ENERGY</div><h1>Catch. Dodge. Repeat.</h1><p>Help your hamster collect the good stuff. Avoid the bombs.</p></section>
+<section class="walletbar" aria-label="Wallet connection"><div class="walletcopy"><b>🏆 Player wallet</b><small id="walletStatus">Connect a wallet to submit your score to the global leaderboard. You can still play without connecting.</small><small class="wallet-address" id="walletAddress"></small></div><div class="wallet-actions"><button class="wallet-btn" id="connectWalletBtn" type="button">CONNECT WALLET</button></div></section><section class="intro"><div class="eyebrow">A LITTLE GAME WITH BIG CHEESE ENERGY</div><h1>Catch. Dodge. Repeat.</h1><p>Help your hamster collect the good stuff. Avoid the bombs.</p></section>
 <section class="gamecard">
 <div class="hud"><div class="metric"><span>Score</span><b id="score">0</b></div><div class="metric"><span>Personal best</span><b id="best">0</b></div><div class="metric"><span>Lives</span><b id="lives">❤️❤️❤️</b></div><div class="metric"><span>Time</span><b id="time">45</b></div></div>
 <div class="arena" id="arena"><div class="sky"></div><div class="moon"></div><div class="hill one"></div><div class="hill two"></div><div class="floor"></div><div id="hamster" class="hamster">🐹</div><div id="overlay" class="overlay"><div class="dialog"><div class="mascot">🐹</div><h2>Ready, squeeker?</h2><p>Catch cheese for points, grab golden cheese for a big bonus, and dodge bombs. You have 45 seconds and 3 lives.</p><button class="cta" id="startBtn">START GAME</button><p style="font-size:10px;margin:14px 0 0">Move with ← → or A / D. On mobile, use the buttons below.</p></div></div></div>
@@ -39,7 +39,7 @@ button{font:inherit;cursor:pointer}.shell{width:min(100%,900px);margin:auto}.mas
 function setHamster(){hamster.style.left=x+'%'}function update(){$('score').textContent=score;$('lives').textContent='❤️'.repeat(lives)+'🖤'.repeat(3-lives);$('time').textContent=time}
 function move(d){if(!running)return;x=Math.max(7,Math.min(93,x+d*5));setHamster()}function clearItems(){items.forEach(i=>i.el.remove());items=[]}
 function spawnItem(){const n=Math.random(),type=n<.12?'bomb':n<.22?'gold':'cheese',el=document.createElement('div');el.className='fall';el.textContent=type==='bomb'?'💣':type==='gold'?'🌟':'🧀';const left=7+Math.random()*86;el.style.left=left+'%';arena.appendChild(el);items.push({el,type,x:left,y:-42,vy:(2+Math.random()*1.2)*speed})}
-function finish(){running=false;cancelAnimationFrame(raf);clearInterval(timer);clearItems();if(score>best){best=score;localStorage.setItem('cheeseCatcherBest',best);$('best').textContent=best}overlay.classList.remove('hidden');overlay.innerHTML='<div class="dialog"><div class="mascot">🐹</div><h2>'+(lives===0?'Ouch!':'Time up!')+'</h2><p>You collected <strong style="color:#ffd45a">'+score+'</strong> points.<br>'+(score===best?'New personal best!':'Personal best: '+best+'.')+'<br><br>'+(score>=250?'Cheese champion. Squeek would be proud!':'Run it back and beat your score.')+'</p><button class="cta" id="againBtn">PLAY AGAIN</button></div>';$('againBtn').addEventListener('click',start)}
+function finish(){running=false;cancelAnimationFrame(raf);clearInterval(timer);clearItems();if(score>best){best=score;localStorage.setItem('cheeseCatcherBest',best);$('best').textContent=best}overlay.classList.remove('hidden');overlay.innerHTML='<div class="dialog"><div class="mascot">🐹</div><h2>'+(lives===0?'Ouch!':'Time up!')+'</h2><p>You collected <strong style="color:#ffd45a">'+score+'</strong> points.<br>'+(score===best?'New personal best!':'Personal best: '+best+'.')+'<br><br>'+(score>=250?'Cheese champion. Squeek would be proud!':'Run it back and beat your score.')+'</p><p id="scoreSubmitStatus" style="font-size:11px;margin:0 0 12px">Preparing score submission…</p><button class="cta" id="againBtn">PLAY AGAIN</button></div>';$('againBtn').addEventListener('click',start);submitScore(score)}
 function frame(ts){if(!running)return;const dt=Math.min(32,ts-last||16);last=ts;spawn+=dt;if(spawn>Math.max(330,850-score*1.2)){spawn=0;spawnItem()}const ar=arena.getBoundingClientRect(),hr=hamster.getBoundingClientRect();items=items.filter(it=>{it.y+=it.vy*dt/16;it.el.style.top=it.y+'px';const ir=it.el.getBoundingClientRect(),hit=ir.bottom>hr.top+12&&ir.top<hr.bottom&&ir.right>hr.left+8&&ir.left<hr.right-8;if(hit){if(it.type==='bomb'){lives--;update();if(lives<=0){it.el.remove();finish();return false}}else{score+=it.type==='gold'?50:10;update()}it.el.remove();return false}if(it.y>ar.height+5){it.el.remove();return false}return true});raf=requestAnimationFrame(frame)}
 function start(){cancelAnimationFrame(raf);clearInterval(timer);clearItems();score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();overlay.classList.add('hidden');timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);raf=requestAnimationFrame(frame)}
 
@@ -55,8 +55,8 @@ async function loadLeaderboard(){
     if(!response.ok)throw new Error('Leaderboard request failed ('+response.status+').');
     const rows=await response.json();
     list.replaceChildren();
-    if(!rows.length){status.textContent='The global leaderboard is connected and waiting for its first verified scores.';return;}
-    status.textContent='Top players by best verified score.';
+    if(!rows.length){status.textContent='The global leaderboard is connected and waiting for its first wallet-signed scores.';return;}
+    status.textContent='Top players by best wallet-signed score.';
     rows.forEach(row=>{
       const item=document.createElement('div');item.className='leaderboard-row';
       const rank=document.createElement('strong');rank.textContent='#'+row.rank;
@@ -69,11 +69,43 @@ async function loadLeaderboard(){
 loadLeaderboard();
 let connectedAddress='';
 function shortAddress(a){return a.slice(0,6)+'...'+a.slice(-4)}
+async function scoreApi(payload){
+  const response=await fetch(SUPABASE_URL+'/functions/v1/score-api',{
+    method:'POST',
+    headers:{'Content-Type':'application/json',apikey:SUPABASE_PUBLISHABLE_KEY,Authorization:'Bearer '+SUPABASE_PUBLISHABLE_KEY},
+    body:JSON.stringify(payload)
+  });
+  const data=await response.json().catch(()=>({error:'Unexpected response from score service.'}));
+  if(!response.ok)throw new Error(data.error||'Score submission failed.');
+  return data;
+}
+async function submitScore(finalScore){
+  const status=$('scoreSubmitStatus');
+  if(!connectedAddress){status.textContent='Connect your wallet before playing to submit a leaderboard score. This run was not submitted.';return;}
+  if(!window.ethereum){status.textContent='Wallet provider unavailable. This run was not submitted.';return;}
+  try{
+    const chain=await window.ethereum.request({method:'eth_chainId'});
+    if(chain.toLowerCase()!==SQUEEKCHAIN_TESTNET_ID)throw new Error('Switch to Ethereum Sepolia and reconnect your wallet.');
+    const accounts=await window.ethereum.request({method:'eth_accounts'});
+    const active=(accounts&&accounts[0])||'';
+    if(!active||active.toLowerCase()!==connectedAddress.toLowerCase())throw new Error('The connected wallet changed. Reconnect and play another round.');
+    status.textContent='Requesting a one-time wallet verification…';
+    const challenge=await scoreApi({action:'challenge',wallet_address:connectedAddress});
+    status.textContent='Approve the signature request in your wallet. No transaction or gas fee.';
+    const signature=await window.ethereum.request({method:'personal_sign',params:[challenge.message,connectedAddress]});
+    status.textContent='Verifying signature and saving score…';
+    await scoreApi({action:'submit',wallet_address:connectedAddress,nonce:challenge.nonce,signature,score:finalScore});
+    status.textContent='Your wallet-signed score was saved to the global leaderboard.';
+    await loadLeaderboard();
+  }catch(error){
+    status.textContent=(error&&error.message)||'Could not submit this score. You can still play again.';
+  }
+}
 function showWallet(address){
   connectedAddress=address||'';
   walletAddress.textContent=address?shortAddress(address):'';
   walletBtn.textContent=address?'WALLET CONNECTED':'CONNECT WALLET';
-  walletStatus.textContent=address?'Wallet connected on Ethereum Sepolia (Squeekchain testnet). Score submission is not enabled yet.':'Connect a wallet to prepare for leaderboard play. You can still play without connecting.';
+  walletStatus.textContent=address?'Wallet connected on Ethereum Sepolia (Squeekchain testnet). Your wallet is ready for score submissions.':'Connect a wallet to prepare for leaderboard play. You can still play without connecting.';
 }
 async function connectWallet(){
   if(!window.ethereum){
