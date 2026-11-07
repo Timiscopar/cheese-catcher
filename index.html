@@ -44,18 +44,17 @@ function frame(ts){if(!running)return;const dt=Math.min(32,ts-last||16);last=ts;
 function start(){cancelAnimationFrame(raf);clearInterval(timer);clearItems();score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();overlay.classList.add('hidden');timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);raf=requestAnimationFrame(frame)}
 
 const walletBtn=$('connectWalletBtn'),walletStatus=$('walletStatus'),walletAddress=$('walletAddress');
-const SEPOLIA_CHAIN_ID='0xaa36a7';
 let connectedAddress='';
 function shortAddress(a){return a.slice(0,6)+'...'+a.slice(-4)}
 function showWallet(address){
   connectedAddress=address||'';
   walletAddress.textContent=address?shortAddress(address):'';
   walletBtn.textContent=address?'WALLET CONNECTED':'CONNECT WALLET';
-  walletStatus.textContent=address?'Wallet connected on Ethereum Sepolia. You can play without signing a transaction.':'Connect a wallet to prepare for leaderboard play. You can still play without connecting.';
+  walletStatus.textContent=address?'Wallet connected. Your address can identify your leaderboard entry once score verification is added.':'Connect a wallet to prepare for leaderboard play. You can still play without connecting.';
 }
 async function connectWallet(){
   if(!window.ethereum){
-    walletStatus.textContent='No browser wallet detected. Open this game in MetaMask or another wallet browser.';
+    walletStatus.textContent='No browser wallet detected. Open this game in a wallet-enabled browser, such as MetaMask.';
     return;
   }
   walletBtn.disabled=true;
@@ -63,18 +62,6 @@ async function connectWallet(){
   try{
     const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
     if(!accounts||!accounts.length)throw new Error('No wallet account was returned.');
-    let chainId=await window.ethereum.request({method:'eth_chainId'});
-    if(chainId.toLowerCase()!==SEPOLIA_CHAIN_ID){
-      try{
-        await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:SEPOLIA_CHAIN_ID}]});
-      }catch(switchError){
-        if(switchError.code===4902){
-          await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:SEPOLIA_CHAIN_ID,chainName:'Sepolia',nativeCurrency:{name:'Sepolia Ether',symbol:'ETH',decimals:18},rpcUrls:['https://ethereum-sepolia-rpc.publicnode.com'],blockExplorerUrls:['https://sepolia.etherscan.io']}]});
-        }else throw switchError;
-      }
-      chainId=await window.ethereum.request({method:'eth_chainId'});
-    }
-    if(chainId.toLowerCase()!==SEPOLIA_CHAIN_ID)throw new Error('Please switch your wallet to Ethereum Sepolia.');
     showWallet(accounts[0]);
   }catch(error){
     walletStatus.textContent=error&&error.code===4001?'Wallet connection was cancelled.':(error.message||'Could not connect wallet.');
@@ -84,14 +71,7 @@ async function connectWallet(){
 walletBtn.addEventListener('click',connectWallet);
 if(window.ethereum){
   window.ethereum.on('accountsChanged',accounts=>showWallet(accounts&&accounts.length?accounts[0]:''));
-  window.ethereum.on('chainChanged',chainId=>{
-    if(chainId.toLowerCase()!==SEPOLIA_CHAIN_ID){
-      showWallet('');
-      walletStatus.textContent='Switch to Ethereum Sepolia to use the leaderboard features.';
-    }
-  });
 }
-
 $('startBtn').addEventListener('click',start);document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'?-1:1)}});
 function bindHold(id,dir){const b=$(id);let interval=null;const down=e=>{e.preventDefault();move(dir);if(interval)clearInterval(interval);interval=setInterval(()=>move(dir),90)},up=()=>{clearInterval(interval);interval=null};b.addEventListener('pointerdown',down);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,up))}bindHold('leftBtn',-1);bindHold('rightBtn',1);
 })();
