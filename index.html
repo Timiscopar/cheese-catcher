@@ -53,7 +53,7 @@ async function getWalletProvider(){
   if(walletProvider)return walletProvider;
   if(walletProviderLoading)return walletProviderLoading;
   walletProviderLoading=(async()=>{
-    const {EthereumProvider}=await import('https://esm.sh/@walletconnect/ethereum-provider@2.21.1?bundle');
+    const {EthereumProvider}=await import('https://cdn.jsdelivr.net/npm/@walletconnect/ethereum-provider@2.21.1/+esm');
     walletProvider=await EthereumProvider.init({
       projectId:REOWN_PROJECT_ID,
       chains:[11155111],
@@ -62,7 +62,7 @@ async function getWalletProvider(){
     });
     walletProvider.on('display_uri',async uri=>{
       activeWalletUri=uri;wcOverlay.classList.add('open');wcQr.textContent='Generating QR code…';
-      try{const mod=await import('https://esm.sh/qrcode@1.5.4?bundle');const QRCode=mod.default||mod;wcQr.replaceChildren();const canvas=document.createElement('canvas');wcQr.appendChild(canvas);await QRCode.toCanvas(canvas,uri,{width:204,margin:1});}
+      try{const mod=await import('https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm');const QRCode=mod.default||mod;wcQr.replaceChildren();const canvas=document.createElement('canvas');wcQr.appendChild(canvas);await QRCode.toCanvas(canvas,uri,{width:204,margin:1});}
       catch(error){wcQr.textContent='QR unavailable. Use Copy connection link below.';wcHint.textContent=error.message||'Could not create QR code.';}
     });
     walletProvider.on('accountsChanged',accounts=>{clearPlayerSession();showWallet(accounts&&accounts.length?accounts[0]:'');});
