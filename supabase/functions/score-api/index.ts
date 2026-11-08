@@ -57,7 +57,24 @@ Deno.serve(async req => {
       if (!challenge || challenge.consumed_at || new Date(challenge.expires_at).getTime() < Date.now())
         return json({ error: "This sign-in request expired. Please connect again." }, 400);
       if (challenge.wallet_address.toLowerCase() !== wallet) return json({ error: "Wallet does not match the sign-in request." }, 400);
-      const valid = await verifyMessage({ address: wallet, message: challenge.message, signature: signature as `0x${string}` });
+      // Wallet providers may encode the recovery value as 0/1 or 27/28.
+      // Normalize it before viem verifies the personal-sign message.
+      if (!/^0x[0-9a-fA-F]{130}$/.test(signature)) {
+        return json({ error: "Wallet returned an invalid message signature." }, 400);
+      }
+      const recoveryValue = Number.parseInt(signature.slice(-2), 16);
+      let normalizedRecoveryValue: number;
+      if (recoveryValue === 0 || recoveryValue === 1) {
+        normalizedRecoveryValue = recoveryValue + 27;
+      } else if (recoveryValue === 27 || recoveryValue === 28) {
+        normalizedRecoveryValue = recoveryValue;
+      } else if (recoveryValue >= 35) {
+        normalizedRecoveryValue = 27 + ((recoveryValue - 35) % 2);
+      } else {
+        return json({ error: "Wallet returned an unsupported signature recovery value. Please reconnect and try again." }, 400);
+      }
+      const normalizedSignature = (signature.slice(0, -2) + normalizedRecoveryValue.toString(16).padStart(2, "0")) as `0x${string}`;
+      const valid = await verifyMessage({ address: wallet, message: challenge.message, signature: normalizedSignature });
       if (!valid) return json({ error: "Wallet signature could not be verified." }, 401);
       const { data: consumed, error: consumeError } = await db.from("score_challenges")
         .update({ consumed_at: new Date().toISOString() }).eq("id", nonce).is("consumed_at", null).select("id").maybeSingle();
