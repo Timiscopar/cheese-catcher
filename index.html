@@ -41,10 +41,32 @@ function move(d){if(!running)return;x=Math.max(7,Math.min(93,x+d*5));setHamster(
 function spawnItem(){const n=Math.random(),type=n<.12?'bomb':n<.22?'gold':'cheese',el=document.createElement('div');el.className='fall';el.textContent=type==='bomb'?'💣':type==='gold'?'🌟':'🧀';const left=7+Math.random()*86;el.style.left=left+'%';arena.appendChild(el);items.push({el,type,x:left,y:-42,vy:(2+Math.random()*1.2)*speed})}
 function finish(){running=false;cancelAnimationFrame(raf);clearInterval(timer);clearItems();if(score>best){best=score;localStorage.setItem('cheeseCatcherBest',best);$('best').textContent=best}overlay.classList.remove('hidden');overlay.innerHTML='<div class="dialog"><div class="mascot">🐹</div><h2>'+(lives===0?'Ouch!':'Time up!')+'</h2><p>You collected <strong style="color:#ffd45a">'+score+'</strong> points.<br>'+(score===best?'New personal best!':'Personal best: '+best+'.')+'<br><br>'+(score>=250?'Cheese champion. Squeek would be proud!':'Run it back and beat your score.')+'</p><p id="scoreSubmitStatus" style="font-size:11px;margin:0 0 12px">Preparing score submission…</p><button class="cta" id="againBtn">PLAY AGAIN</button></div>';$('againBtn').addEventListener('click',start);submitScore(score)}
 function frame(ts){if(!running)return;const dt=Math.min(32,ts-last||16);last=ts;spawn+=dt;if(spawn>Math.max(330,850-score*1.2)){spawn=0;spawnItem()}const ar=arena.getBoundingClientRect(),hr=hamster.getBoundingClientRect();items=items.filter(it=>{it.y+=it.vy*dt/16;it.el.style.top=it.y+'px';const ir=it.el.getBoundingClientRect(),hit=ir.bottom>hr.top+12&&ir.top<hr.bottom&&ir.right>hr.left+8&&ir.left<hr.right-8;if(hit){if(it.type==='bomb'){lives--;update();if(lives<=0){it.el.remove();finish();return false}}else{score+=it.type==='gold'?50:10;update()}it.el.remove();return false}if(it.y>ar.height+5){it.el.remove();return false}return true});raf=requestAnimationFrame(frame)}
-function start(){if(!connectedAddress||!playerSessionToken){walletStatus.textContent='Sign in with your wallet before starting a leaderboard game.';return;}cancelAnimationFrame(raf);clearInterval(timer);clearItems();score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();overlay.classList.add('hidden');timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);raf=requestAnimationFrame(frame)}
+function start(){cancelAnimationFrame(raf);clearInterval(timer);clearItems();score=0;lives=3;time=45;x=50;speed=1;spawn=0;last=0;running=true;setHamster();update();overlay.classList.add('hidden');timer=setInterval(()=>{if(!running)return;time--;speed=1+(45-time)*.018;update();if(time<=0)finish()},1000);raf=requestAnimationFrame(frame)}
 
 const walletBtn=$('connectWalletBtn'),walletStatus=$('walletStatus'),walletAddress=$('walletAddress');
 const SQUEEKCHAIN_TESTNET_ID='0xaa36a7';
+const REOWN_PROJECT_ID='e5352451554a729ab0b772f6e4616f64';
+let walletProvider=null;
+let walletProviderLoading=null;
+async function getWalletProvider(){
+  if(walletProvider)return walletProvider;
+  if(walletProviderLoading)return walletProviderLoading;
+  walletProviderLoading=(async()=>{
+    const {EthereumProvider}=await import('https://esm.sh/@walletconnect/ethereum-provider@2.21.1?bundle');
+    walletProvider=await EthereumProvider.init({
+      projectId:REOWN_PROJECT_ID,
+      chains:[11155111],
+      showQrModal:true,
+      metadata:{name:'Cheese Catcher',description:'A hamster-powered arcade game for the Squeekchain community.',url:location.origin,icons:['https://cheesecatcher.fun/favicon.ico']}
+    });
+    walletProvider.on('accountsChanged',accounts=>{clearPlayerSession();showWallet(accounts&&accounts.length?accounts[0]:'');});
+    walletProvider.on('chainChanged',chainId=>{
+      if(String(chainId).toLowerCase()!==SQUEEKCHAIN_TESTNET_ID){showWallet('');walletStatus.textContent='Switch to Ethereum Sepolia to use leaderboard features.';}
+    });
+    return walletProvider;
+  })();
+  try{return await walletProviderLoading;}finally{walletProviderLoading=null;}
+}
 // Supabase public frontend configuration. The publishable key is designed for browser use.
 const SUPABASE_URL='https://tilxhibtxttxmviuseqi.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_6smVuKbt8EzNtTkrh9fq4Q_P3eIE8JY';
@@ -121,7 +143,7 @@ async function authenticateWallet(address){
   walletStatus.textContent='Preparing your one-time sign-in…';
   const challenge=await scoreApi({action:'challenge',wallet_address:address});
   walletStatus.textContent='Sign the one-time message in your wallet. No transaction or gas fee.';
-  const signature=await window.ethereum.request({method:'personal_sign',params:[challenge.message,address]});
+  const signature=await walletProvider.request({method:'personal_sign',params:[challenge.message,address]});
   const result=await scoreApi({action:'authenticate',wallet_address:address,nonce:challenge.nonce,signature});
   playerSessionToken=result.session_token;sessionWallet=address;
   sessionStorage.setItem('cheeseCatcherSessionToken',playerSessionToken);
@@ -135,39 +157,32 @@ async function restorePlayerSession(address){
   catch(_){clearPlayerSession();return false;}
 }
 async function connectWallet(){
-  if(!window.ethereum){walletStatus.textContent='No browser wallet detected. Open this game in a wallet-enabled browser, such as MetaMask.';return;}
   walletBtn.disabled=true;walletBtn.textContent='CONNECTING...';
   try{
-    const accounts=await window.ethereum.request({method:'eth_requestAccounts'});
-    if(!accounts||!accounts.length)throw new Error('No wallet account was returned.');
-    let chainId=await window.ethereum.request({method:'eth_chainId'});
+    walletStatus.textContent='Opening secure wallet selection…';
+    const provider=await getWalletProvider();
+    await provider.connect();
+    const accounts=await provider.request({method:'eth_accounts'});
+    if(!accounts||!accounts.length)throw new Error('No wallet account was returned. Please choose a wallet and connect.');
+    let chainId=String(await provider.request({method:'eth_chainId'}));
     if(chainId.toLowerCase()!==SQUEEKCHAIN_TESTNET_ID){
-      try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:SQUEEKCHAIN_TESTNET_ID}]});}
+      try{await provider.request({method:'wallet_switchEthereumChain',params:[{chainId:SQUEEKCHAIN_TESTNET_ID}]});}
       catch(switchError){
-        if(switchError.code===4902)await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:SQUEEKCHAIN_TESTNET_ID,chainName:'Ethereum Sepolia (Squeekchain testnet)',nativeCurrency:{name:'Sepolia Ether',symbol:'ETH',decimals:18},rpcUrls:['https://ethereum-sepolia-rpc.publicnode.com'],blockExplorerUrls:['https://sepolia.etherscan.io']}]});
+        if(switchError.code===4902)await provider.request({method:'wallet_addEthereumChain',params:[{chainId:SQUEEKCHAIN_TESTNET_ID,chainName:'Ethereum Sepolia (Squeekchain testnet)',nativeCurrency:{name:'Sepolia Ether',symbol:'ETH',decimals:18},rpcUrls:['https://ethereum-sepolia-rpc.publicnode.com'],blockExplorerUrls:['https://sepolia.etherscan.io']}]});
         else throw switchError;
       }
-      chainId=await window.ethereum.request({method:'eth_chainId'});
+      chainId=String(await provider.request({method:'eth_chainId'}));
     }
     if(chainId.toLowerCase()!==SQUEEKCHAIN_TESTNET_ID)throw new Error('Please switch your wallet to Ethereum Sepolia.');
     const address=accounts[0];connectedAddress=address;
     if(await restorePlayerSession(address)){showWallet(address);walletStatus.textContent='Welcome back. Your player session is still active.';}
     else await authenticateWallet(address);
   }catch(error){
-    walletStatus.textContent=error&&error.code===4001?'Wallet sign-in was cancelled. Sign in to play for the leaderboard.':(error.message||'Could not sign in.');
-    walletBtn.textContent='SIGN IN TO PLAY';
+    walletStatus.textContent=error&&error.code===4001?'Wallet connection or sign-in was cancelled.':(error.message||'Could not sign in.');
+    walletBtn.textContent='CONNECT WALLET';
   }finally{walletBtn.disabled=false;}
 }
 walletBtn.addEventListener('click',connectWallet);
-if(window.ethereum){
-  window.ethereum.on('accountsChanged',accounts=>{clearPlayerSession();showWallet(accounts&&accounts.length?accounts[0]:'');});
-  window.ethereum.on('chainChanged',chainId=>{
-    if(chainId.toLowerCase()!==SQUEEKCHAIN_TESTNET_ID){
-      showWallet('');
-      walletStatus.textContent='Switch to Ethereum Sepolia to use Squeekchain testnet features.';
-    }
-  });
-}
 $('startBtn').addEventListener('click',start);document.addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','a','d','A','D'].includes(e.key)){e.preventDefault();move(e.key==='ArrowLeft'||e.key.toLowerCase()==='a'?-1:1)}});
 function bindHold(id,dir){const b=$(id);let interval=null;const down=e=>{e.preventDefault();move(dir);if(interval)clearInterval(interval);interval=setInterval(()=>move(dir),90)},up=()=>{clearInterval(interval);interval=null};b.addEventListener('pointerdown',down);['pointerup','pointerleave','pointercancel'].forEach(ev=>b.addEventListener(ev,up))}bindHold('leftBtn',-1);bindHold('rightBtn',1);
 })();
