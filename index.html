@@ -109,7 +109,7 @@ async function scoreApi(payload){
 }
 async function submitScore(finalScore){
   const status=$('scoreSubmitStatus');
-  if(!connectedAddress||!playerSessionToken){status.textContent='Sign in with your wallet before playing. This run was not submitted.';return;}
+  if(!connectedAddress||!playerSessionToken){status.textContent='Connect your wallet and sign in to submit this score. Your game was not affected.';return;}
   try{
     status.textContent='Saving your score…';
     await scoreApi({action:'submit',wallet_address:connectedAddress,session_token:playerSessionToken,score:finalScore});
